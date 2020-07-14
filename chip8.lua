@@ -91,7 +91,7 @@ end
 function Chip8:instruction_data(debug)
     -- first, second byte that makes the instuction
     local first, second = self.memory[self.pc], self.memory[self.pc + 1]
-    if debug then
+    if debug == true then
         print(string.format("PC: %x Instruction %x %x", self.pc, first, second))
         print(string.format("I: %x", self.i))
         print("Stack: ")
@@ -255,11 +255,6 @@ function Chip8:opcode_switch(instr)
     elseif instr.f_nibble == 0xC then
         -- 0xCXNN
         -- Set VX to a random number with a mask of NN
-        print("Stack: ")
-        for i = 0, 0xF do
-            print(i.." "..self.v[i])
-        end
-        print()
         self.v[instr.x] = bit.band(math.random(0, 255), instr.nn)
     elseif instr.f_nibble == 0xD then
         -- 0xDXYN
@@ -273,8 +268,7 @@ function Chip8:opcode_switch(instr)
         for y = 0, instr.n - 1 do
             local sprite_data = self.memory[self.i + y]
             for x = 0, 7 do
-                if  (vy + y) >= 32 and (vx + x) >= 64 then
-                else
+                if  ((vy + y) < 32) and ((vx + x) < 64) then
                     local old_bit = self.display[vy + y][vx + x]
                     local new_bit = bit.rshift(
                         bit.band(sprite_data, bit.lshift(1, 8 - x - 1)), 8 - x - 1
@@ -329,7 +323,7 @@ function Chip8:opcode_switch(instr)
             -- Set the delay timer to the value of register VX
             self.timer.delay = self.v[instr.x]
         elseif instr.nn == 0x18 then
-            -- 0xFX18
+            -- 0xFX18c
             -- Set the sound timer to the value of register VX
             self.timer.sound = self.v[instr.x]
         elseif instr.nn == 0x1E then
